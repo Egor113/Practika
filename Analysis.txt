@@ -1,0 +1,150 @@
+//Ла ла ла
+void Analysis::pushchains()
+{
+    int i=0,
+    count=0;// Счётчик символов разделения ';'
+    bool find=false;
+    std::set<char>  ch,ch2;// Множество разделителей
+    std::string buff,// Строка-буфер для считывания строк из файла
+    stroka=" ";//Строка для хранения текущего выражения
+
+    ch.insert('.');//Добавление разделителей в множество разделителей;
+    ch.insert(',');
+    ch.insert(';');
+    ch.insert('"');
+
+    ch2.insert('(');
+    ch2.insert(')');
+    ch2.insert('"');
+
+    Words words;
+    words.count = 0;
+    words.word = "";
+    v.push_back(words);//Добавление первого элемента
+    //в массив слов
+
+    getline(fileReader, buff); // считывания первой(служебной) строки
+    //заголовков из файла
+    while(getline(fileReader, buff))//Цикл считывание строк из файла
+    {
+        std::string str;//в str хранится текущая строка
+        str = buff;
+        i=0;
+        find = false;//Переменная, хранящая информацию,
+        //найден ли нужный столбец в файле или нет
+        while (i!=str.length())//Цикл поиска нужного столбца в файле
+        {
+            if (str[i]==';')
+            {
+                count++;
+                //std::cout << "Count: " << count << std::endl;
+            }
+            i++;
+            if (count==13)//Если найден нужный столбец
+            {
+                find=true;//То find=true
+                count=0;
+            }
+        }
+        if (find)//Если найден нужный столбец
+        {
+            str=str.substr(str.find_last_of(";")+2,str.length()-(str.find_last_of(";")+2));
+            //в str хранится строка из нужного столбца
+            std::string tmp;//В tmp будет храниться текущее слово
+            std::istringstream ist(str);
+            while(ist >> tmp) //Пока не закончится строка str
+            {
+                if(tmp.length() >= 0)
+                {
+                    bool match=false;
+                    int i = 0;
+                    if (ch.find(stroka[stroka.length()-1]) != ch.end())//Если последний символ
+                    //строки является разделителем
+                    {
+                        stroka.erase(stroka.length()-1,1);//удалить последний символ строки
+                        for(int i = 0; i < stroka.length(); ++i)//Цикл удаления символов-разделителей
+                        {
+                            if (ch2.find(stroka[i])!= ch2.end())
+                            {
+                                stroka.erase(stroka.find(stroka[i]),1);
+                                i=-1;
+                            }
+                        }
+                        while ((!match) && (i<v.size()))//Пока выражение не найдено и не достингнут
+                        //конец массива выражений
+                        {
+                            if(stroka.compare(v[i].word)==0)//Если текущее выражение совпало
+                        //со выражением из массива выражений
+                            {
+                                v[i].count++;//увеличиваем поле-счётчик выражений в массиве выражений
+                                match=true;
+                            }
+                            i++;
+                        }
+                        if (!match)//Если текущее выражение встретилось в первый раз
+                        {
+                            Words w;
+                            w.word  = stroka;
+                            w.count = 1;
+                            v.push_back(w);//То добавить его в массив выражений
+                            stroka=tmp;//В stroka хранится текущее выражение
+                        }
+                    else stroka=tmp;;//В stroka хранится текущее выражение
+                    }
+                    else
+                    {
+                            if (stroka[0]==' ')//Если первый символ stroka пробел
+                            {
+                                stroka.clear();//Очистить stroka
+                                stroka=stroka+tmp;//Добавить в stroka текущее слово
+                            } else stroka=stroka+' '+tmp;//Добавить в stroka текущее слово через пробел
+                    }
+
+                }
+            }
+        }
+    }
+    bool match=false;
+    i = 0;
+    //Повторить операцию добавления выражение в массив выражений
+    //для последнего выражения текущей строки файла
+    if (ch.find(stroka[stroka.length()-1]) != ch.end())
+    {
+        stroka.erase(stroka.length()-1,1);
+        for(int i = 0; i < stroka.length(); ++i)//Цикл удаления символов-разделителей
+        {
+            if (ch2.find(stroka[i])!= ch2.end())
+            {
+                stroka.erase(stroka.find(stroka[i]),1);
+                i=-1;
+            }
+        }
+        if(stroka.compare(v[i].word)==0)//Если текущее выражение совпало
+        //со выражением из массива выражений
+            {
+                        v[i].count++;//увеличиваем поле-счётчик выражений в массиве выражений
+                        match=true;
+            }
+        while ((!match) && (i<v.size()))
+        {
+            if(stroka.compare(v[i].word)==0)
+            {
+                v[i].count++;
+                match=true;
+            }
+            i++;
+        }
+        if (!match)
+        {
+        Words w;
+        w.word  = stroka;
+        w.count = 1;
+        v.push_back(w);
+        }
+
+    }
+    ch.clear();//Очистить память, выделенную под множество разделителей
+    ch2.clear();//Очистить память, выделенную под множество разделителей
+    std::string().swap(buff);//Очистить память, выделенную под строку buff
+    std::string().swap(stroka);
+}
